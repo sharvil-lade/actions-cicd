@@ -1,0 +1,25 @@
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Pull Docker image
+        run: sudo docker pull sharvil17/actions-cicd:latest
+
+      - name: Stop and remove old container
+        run: sudo docker rm -f actions-cicd-container || true
+
+      - name: Run new container
+        run: |
+          sudo docker run -d \
+            --name actions-cicd-container \
+            -p 8080:8080 \
+            --restart unless-stopped \
+            sharvil17/actions-cicd:latest
